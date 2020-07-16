@@ -163,7 +163,7 @@ char *callFunc(const char *command, GList *funcs)
 {
     // PARSE CALL
     static const char *regex = 
-        "(?P<name>[a-zA-Z0-9_]*)\\((?P<args>[a-zA-Z0-9_, ]*)\\)";
+        "(?P<name>[a-zA-Z0-9_]*)\\((?P<args>.*)\\)";
     static const char *groupnames[] = {"name", "args", NULL};
 
     log_info("Start parsing \"%s\"", (char *)command);
@@ -198,8 +198,14 @@ char *callFunc(const char *command, GList *funcs)
         return result;
     }
     // FUNCTION CALL
-    log_dbg("Try to call function");
     struct func *data = el->data;
+    log_dbg("Try to call function");
+    char *result = data->funcPtr(args);
 
-    return data->funcPtr(args);
+    log_dbg("Function returned: %s", result);
+    if (result == NULL) {
+        result = malloc(1);
+        result[0] = '\0';
+    }
+    return result;
 }

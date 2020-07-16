@@ -1,4 +1,4 @@
-DEBUG ?= 5
+DEBUG ?= 3
 TARGET := RPCserver
 SRCDIR  = ./src
 INCDIRS = ./inc
@@ -8,6 +8,11 @@ SRCS += parseArgs.c
 SRCS += linkFuncs.c
 SRCS += server.c
 SRCS += re_collect_named.c
+
+SRCSTEST = parseArgs.c
+SRCSTEST += linkFuncs.c
+SRCSTEST += server.c
+SRCSTEST += re_collect_named.c
 
 FUNC  = helloName.c
 FUNC += hello.c
@@ -22,6 +27,7 @@ FUNCDIR = ./functions
 FUNCBUILDDIR = $(FUNCDIR)/.build
 
 BUILDDIR = ./.build
+TESTBUILDDIR = $(BUILDDIR)/test
 
 CFLAGS = -O2 -std=gnu17 -Wall -Wextra -Wpedantic
 CFLAGS += $(shell pkg-config --cflags $(LIBS))
@@ -32,7 +38,7 @@ LDFLAGS = $(MANUAL_LINK)
 LDFLAGS += $(shell pkg-config --libs $(LIBS)) -Wl,--as-needed
 CC := gcc
 
-.PHONY: all clean tidy run functions
+.PHONY: all clean tidy run functions testBuild
 
 all: $(TARGET)
 
@@ -56,6 +62,16 @@ $(FUNCBUILDDIR)/%.so:$(FUNCDIR)/%.c | $(FUNCBUILDDIR)
 	mv $(file:.c=.so) $(FUNCBUILDDIR)/;)
 	
 $(FUNCBUILDDIR):
+	mkdir -p $@
+
+testBuild:$(addprefix $(TESTBUILDDIR)/,$(SRCSTEST:.c=.o)) 
+	$(CC) -shared -o $(TESTBUILDDIR)/lib$(TARGET).so $(CFLAGS) $(LDFLAGS)\
+			$(addprefix $(TESTBUILDDIR)/,$(SRCSTEST:.c=.o))
+
+$(TESTBUILDDIR)/%.o: $(SRCDIR)/%.c | $(TESTBUILDDIR)
+	$(CC) -fpic $(CFLAGS) $(addprefix -I,$(INCDIRS)) -c $< -o $@
+
+$(TESTBUILDDIR):
 	mkdir -p $@
 
 run: $(TARGET)

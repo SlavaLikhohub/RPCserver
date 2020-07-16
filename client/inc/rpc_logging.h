@@ -21,7 +21,7 @@
 #ifndef _LOGGING_H_
 #define _LOGGING_H_
 
-#if !defined(DEBUG)
+#if !defined(DEBUG) || !DEBUG
 #define log(lvl, fmt, ...)
 #define log_dbg(fmt, ...)
 #define log_info(fmt, ...)
